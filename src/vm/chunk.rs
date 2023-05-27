@@ -4,8 +4,9 @@ use std::fmt::{Debug, Write};
 
 #[derive(Clone, PartialEq)]
 pub struct Chunk {
-    code: Vec<u8>,
-    constants: Vec<Value>,
+    pub code: Vec<u8>,
+    pub constants: Vec<Value>,
+    pub lines: Vec<usize>,
 }
 
 impl Chunk {
@@ -13,11 +14,13 @@ impl Chunk {
         Self {
             code: vec![],
             constants: vec![],
+            lines: vec![],
         }
     }
 
-    pub fn write(&mut self, byte: u8) {
+    pub fn write(&mut self, byte: u8, line: usize) {
         self.code.push(byte);
+        self.lines.push(line);
     }
 
     pub fn add_constant(&mut self, value: Value) -> usize {
@@ -39,6 +42,11 @@ impl Chunk {
         offset: usize,
     ) -> Result<usize, std::fmt::Error> {
         write!(out, "{:04} ", offset)?;
+        if offset > 0 && self.lines[offset] == self.lines[offset - 1] {
+            write!(out, "   | ")?;
+        } else {
+            write!(out, "{:4} ", self.lines[offset])?;
+        }
         match OpCode::from(self.code[offset]) {
             OpCode::Const => self.const_instr(out, offset),
             OpCode::Return => self.simple_instr(out, "RET", offset),
@@ -51,8 +59,8 @@ impl Chunk {
 
     fn const_instr<W: Write>(&self, out: &mut W, offset: usize) -> Result<usize, std::fmt::Error> {
         let constant = self.code[offset + 1];
-        write!(out, "CONST {:04} ", constant)?;
-        write!(out, "{}", self.constants[constant as usize])?;
+        write!(out, "CONST {:4} ", constant)?;
+        write!(out, "'{}'", self.constants[constant as usize])?;
         writeln!(out)?;
         Ok(offset + 2)
     }
@@ -71,5 +79,29 @@ impl Chunk {
 impl Debug for Chunk {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.disassemble(f)
+    }
+}
+
+mod tests {
+    use super::Chunk;
+    use super::OpCode;
+
+    #[test]
+    fn test_ret() {
+        let mut chunk = Chunk::new();
+        chunk.write(OpCode::Return as u8, 0);
+        insta::assert_debug_snapshot!(chunk);
+    }
+
+    #[test]
+    fn test_const() {
+        let mut chunk = Chunk::new();
+        let c1 = chunk.add_constant(1.2);
+        let c2 = chunk.add_constant(2.3);
+        chunk.write(OpCode::Const as u8, 0);
+        chunk.write(c1 as u8, 0);
+        chunk.write(OpCode::Const as u8, 1);
+        chunk.write(c2 as u8, 1);
+        insta::assert_debug_snapshot!(chunk);
     }
 }
