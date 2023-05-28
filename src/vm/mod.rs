@@ -33,23 +33,38 @@ pub enum InterpretResult {
 pub struct VM {
     chunk: Chunk,
     ip: usize,
+    stack: Vec<Value>,
 }
 
 impl VM {
+    const STACK_MAX: usize = 256;
+
     pub fn new(chunk: Chunk) -> Self {
-        Self { chunk, ip: 0 }
+        Self {
+            chunk,
+            ip: 0,
+            stack: vec![],
+        }
     }
 
     pub fn run(&mut self) -> InterpretResult {
         loop {
             let instr = self.read_instr();
+            log::trace!("Instr: {:?}", instr);
+            log::trace!("Stack: {:?}", self.stack);
             match instr {
                 OpCode::Const => {
                     let constant = self.read_constant();
-                    println!("{}", constant);
+                    self.push(constant);
+                }
+                OpCode::Neg => {
+                    let value = self.pop();
+                    self.push(-value);
+                }
+                OpCode::Return => {
+                    println!("{}", self.pop());
                     return InterpretResult::Ok;
                 }
-                OpCode::Return => return InterpretResult::Ok,
                 _ => return InterpretResult::RuntimeError,
             }
         }
@@ -64,5 +79,16 @@ impl VM {
     fn read_constant(&mut self) -> Value {
         let op = self.read_instr();
         self.chunk.constants[op as usize]
+    }
+
+    fn push(&mut self, value: Value) {
+        if self.stack.len() >= Self::STACK_MAX {
+            panic!("Stack overflow");
+        }
+        self.stack.push(value);
+    }
+
+    fn pop(&mut self) -> Value {
+        self.stack.pop().expect("Stack underflow")
     }
 }

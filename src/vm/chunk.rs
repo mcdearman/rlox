@@ -49,6 +49,7 @@ impl Chunk {
         }
         match OpCode::from(self.code[offset]) {
             OpCode::Const => self.const_instr(out, offset),
+            OpCode::Neg => self.simple_instr(out, "NEG", offset),
             OpCode::Return => self.simple_instr(out, "RET", offset),
             _ => {
                 write!(out, "Unknown opcode {}", self.code[offset])?;
@@ -102,6 +103,13 @@ mod tests {
         chunk.write(c1 as u8, 0);
         chunk.write(OpCode::Const as u8, 1);
         chunk.write(c2 as u8, 1);
+        insta::assert_debug_snapshot!(chunk);
+    }
+
+    #[test]
+    fn test_neg() {
+        let mut chunk = Chunk::new();
+        chunk.write(OpCode::Neg as u8, 0);
         insta::assert_debug_snapshot!(chunk);
     }
 }
