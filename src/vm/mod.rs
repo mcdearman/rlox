@@ -57,6 +57,26 @@ impl VM {
                     let constant = self.read_constant();
                     self.push(constant);
                 }
+                OpCode::Add => {
+                    let b = self.pop();
+                    let a = self.pop();
+                    self.push(a + b);
+                }
+                OpCode::Sub => {
+                    let b = self.pop();
+                    let a = self.pop();
+                    self.push(a - b);
+                }
+                OpCode::Mul => {
+                    let b = self.pop();
+                    let a = self.pop();
+                    self.push(a * b);
+                }
+                OpCode::Div => {
+                    let b = self.pop();
+                    let a = self.pop();
+                    self.push(a / b);
+                }
                 OpCode::Neg => {
                     let value = self.pop();
                     self.push(-value);

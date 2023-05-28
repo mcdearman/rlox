@@ -49,6 +49,10 @@ impl Chunk {
         }
         match OpCode::from(self.code[offset]) {
             OpCode::Const => self.const_instr(out, offset),
+            OpCode::Add => self.simple_instr(out, "ADD", offset),
+            OpCode::Sub => self.simple_instr(out, "SUB", offset),
+            OpCode::Mul => self.simple_instr(out, "MUL", offset),
+            OpCode::Div => self.simple_instr(out, "DIV", offset),
             OpCode::Neg => self.simple_instr(out, "NEG", offset),
             OpCode::Return => self.simple_instr(out, "RET", offset),
             _ => {
