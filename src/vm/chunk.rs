@@ -90,6 +90,7 @@ impl Debug for Chunk {
 mod tests {
     use super::Chunk;
     use super::OpCode;
+    use crate::vm::value::Value;
 
     #[test]
     fn test_ret() {
@@ -101,8 +102,8 @@ mod tests {
     #[test]
     fn test_const() {
         let mut chunk = Chunk::new();
-        let c1 = chunk.add_constant(1.2);
-        let c2 = chunk.add_constant(2.3);
+        let c1 = chunk.add_constant(Value::Number(1.2));
+        let c2 = chunk.add_constant(Value::Number(2.3));
         chunk.write(OpCode::Const as u8, 0);
         chunk.write(c1 as u8, 0);
         chunk.write(OpCode::Const as u8, 1);

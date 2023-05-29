@@ -60,26 +60,41 @@ impl VM {
                 OpCode::Add => {
                     let b = self.pop();
                     let a = self.pop();
-                    self.push(a + b);
+                    match (a, b) {
+                        (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a + b)),
+                        _ => return InterpretResult::RuntimeError,
+                    }
                 }
                 OpCode::Sub => {
                     let b = self.pop();
                     let a = self.pop();
-                    self.push(a - b);
+                    match (a, b) {
+                        (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a - b)),
+                        _ => return InterpretResult::RuntimeError,
+                    }
                 }
                 OpCode::Mul => {
                     let b = self.pop();
                     let a = self.pop();
-                    self.push(a * b);
+                    match (a, b) {
+                        (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a * b)),
+                        _ => return InterpretResult::RuntimeError,
+                    }
                 }
                 OpCode::Div => {
                     let b = self.pop();
                     let a = self.pop();
-                    self.push(a / b);
+                    match (a, b) {
+                        (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a / b)),
+                        _ => return InterpretResult::RuntimeError,
+                    }
                 }
                 OpCode::Neg => {
                     let value = self.pop();
-                    self.push(-value);
+                    match value {
+                        Value::Number(n) => self.push(Value::Number(-n)),
+                        _ => return InterpretResult::RuntimeError,
+                    }
                 }
                 OpCode::Return => {
                     println!("{}", self.pop());
